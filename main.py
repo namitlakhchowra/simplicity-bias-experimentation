@@ -276,3 +276,44 @@ def generate_conflict_set(n_samples, rng):
     ]).astype(np.float32)
 
     return X, b_simple
+
+def evaluate_model(
+    model,
+    p_simple,
+    p_complex,
+    seed
+):
+
+    rng = np.random.default_rng(seed)
+
+    # Evaluate ordinary test accuracy
+    X_test, y_test, _, _ = generate_data(
+        N_TEST,
+        p_simple,
+        p_complex,
+        rng
+    )
+
+    predictions = predict(
+        model, X_test
+    )
+
+    test_accuracy = np.mean(
+        predictions == y_test
+    )
+
+    # Evaluate reliance on the conflict set
+    X_conflict, b_simple = generate_conflict_set(
+        N_TEST,
+        rng
+    )
+
+    conflict_predictions = predict(
+        model, X_conflict
+    )
+
+    simple_reliance = np.mean(
+        conflict_predictions == b_simple
+    )
+
+    return test_accuracy, simple_reliance
