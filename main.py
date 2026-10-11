@@ -48,3 +48,42 @@ def sample_simple_feature(rule_output, rng):
     )
 
     return x
+
+def sample_complex_feature(rule_output, rng):
+    """
+    Generate feature values whose sine-based predictions
+    match the requested binary outputs.
+    """
+
+
+    x = np.empty(
+        len(rule_output),
+        dtype=np.float32
+    )
+
+    remaining = np.ones(
+        len(rule_output),
+        dtype=bool
+    )
+
+    while remaining.any():
+
+        indices = np.flatnonzero(remaining)
+
+        candidates = rng.uniform(
+            -1, 1, len(indices)
+        )
+
+        predictions = complex_rule(candidates)
+
+        accepted = (
+            predictions == rule_output[indices]
+        )
+
+        accepted_indices = indices[accepted]
+
+        x[accepted_indices] = candidates[accepted]
+
+        remaining[accepted_indices] = False
+
+    return x
