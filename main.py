@@ -504,3 +504,9 @@ plt.savefig(
 )
 
 plt.show()
+
+import pandas as pd
+
+df = pd.DataFrame(results)
+
+df.to_csv("results.csv", index=False)
