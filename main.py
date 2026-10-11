@@ -246,3 +246,33 @@ def predict(model, X):
         )
 
     return predictions.cpu().numpy()
+
+def generate_conflict_set(n_samples, rng):
+    """
+    Generate examples where the simple and complex
+    feature rules always disagree.
+
+    The simple feature predicts b_simple.
+    The complex feature predicts 1 - b_simple.
+    """
+
+    b_simple = rng.integers(
+        0, 2, n_samples
+    )
+
+    b_complex = 1 - b_simple
+
+    x_simple = sample_simple_feature(
+        b_simple, rng
+    )
+
+    x_complex = sample_complex_feature(
+        b_complex, rng
+    )
+
+    X = np.column_stack([
+        x_simple,
+        x_complex
+    ]).astype(np.float32)
+
+    return X, b_simple
