@@ -87,3 +87,65 @@ def sample_complex_feature(rule_output, rng):
         remaining[accepted_indices] = False
 
     return x
+
+def generate_data(
+    n_samples,
+    p_simple,
+    p_complex,
+    rng
+):
+    """
+    Generate two features and a shared binary target.
+
+    p_simple:
+        Probability that the simple feature's rule
+        agrees with the target.
+
+    p_complex:
+        Probability that the complex feature's rule
+        agrees with the target.
+    """
+
+    y = rng.integers(
+        0, 2, n_samples
+    )
+
+    simple_correct = (
+        rng.random(n_samples) < p_simple
+    )
+
+    complex_correct = (
+        rng.random(n_samples) < p_complex
+    )
+
+    b_simple = np.where(
+        simple_correct,
+        y,
+        1 - y
+    )
+
+    b_complex = np.where(
+        complex_correct,
+        y,
+        1 - y
+    )
+
+    x_simple = sample_simple_feature(
+        b_simple, rng
+    )
+
+    x_complex = sample_complex_feature(
+        b_complex, rng
+    )
+
+    X = np.column_stack([
+        x_simple,
+        x_complex
+    ]).astype(np.float32)
+
+    return (
+        X,
+        y.astype(np.int64),
+        b_simple,
+        b_complex
+    )
