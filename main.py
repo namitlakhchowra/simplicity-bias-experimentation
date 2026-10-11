@@ -317,3 +317,76 @@ def evaluate_model(
     )
 
     return test_accuracy, simple_reliance
+
+results = []
+
+for p_complex in P_COMPLEX_GRID:
+
+    accuracies = []
+    reliances = []
+
+    print(
+        f"\nComplex predictiveness: {p_complex:.2f}"
+    )
+
+    for seed in range(N_SEEDS):
+
+        rng = np.random.default_rng(
+            SEED + seed
+        )
+
+        # Generate training data
+        X_train, y_train, _, _ = generate_data(
+            N_TRAIN,
+            P_SIMPLE,
+            p_complex,
+            rng
+        )
+
+        # Train model
+        model = train_model(
+            X_train,
+            y_train,
+            SEED + seed
+        )
+
+        # Evaluate model
+        accuracy, reliance = evaluate_model(
+            model,
+            P_SIMPLE,
+            p_complex,
+            SEED + 1000 + seed
+        )
+
+        accuracies.append(accuracy)
+        reliances.append(reliance)
+
+        print(
+            f"Seed {seed + 1}: "
+            f"accuracy={accuracy:.3f}, "
+            f"simple reliance={reliance:.3f}"
+        )
+
+    results.append({
+        "p_complex": p_complex,
+        "test_accuracy": np.mean(accuracies),
+        "test_accuracy_std": np.std(accuracies),
+        "simple_reliance": np.mean(reliances),
+        "reliance_std": np.std(reliances)
+    })
+
+print("\n========== FINAL RESULTS ==========\n")
+
+print(
+    f"{'P Complex':>12} "
+    f"{'Test Accuracy':>15} "
+    f"{'Simple Reliance':>17}"
+)
+
+for result in results:
+
+    print(
+        f"{result['p_complex']:>12.2f} "
+        f"{result['test_accuracy']:>15.3f} "
+        f"{result['simple_reliance']:>17.3f}"
+    )
