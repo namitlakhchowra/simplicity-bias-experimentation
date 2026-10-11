@@ -23,3 +23,28 @@ DEVICE = "cpu"
 
 np.random.seed(SEED)
 torch.manual_seed(SEED)
+
+def complex_rule(x):
+    
+    return (np.sin(5 * np.pi * x) >= 0).astype(int)
+
+def sample_simple_feature(rule_output, rng):
+    """
+    Generate feature values whose threshold-based
+    predictions match the requested binary outputs.
+    """
+
+    x = np.empty(len(rule_output), dtype=np.float32)
+
+    positive = rule_output == 1
+    negative = rule_output == 0
+
+    x[positive] = rng.uniform(
+        0, 1, positive.sum()
+    )
+
+    x[negative] = rng.uniform(
+        -1, 0, negative.sum()
+    )
+
+    return x
