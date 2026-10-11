@@ -390,3 +390,117 @@ for result in results:
         f"{result['test_accuracy']:>15.3f} "
         f"{result['simple_reliance']:>17.3f}"
     )
+
+p_values = np.array([
+    r["p_complex"] for r in results
+])
+
+reliance_values = np.array([
+    r["simple_reliance"] for r in results
+])
+
+below = np.where(
+    reliance_values < 0.5
+)[0]
+
+if len(below) == 0:
+
+    print(
+        "\nNo transition observed in the tested range."
+    )
+
+else:
+
+    i = below[0]
+
+    if i == 0:
+
+        transition = p_values[0]
+
+    else:
+
+        x0 = p_values[i - 1]
+        x1 = p_values[i]
+
+        y0 = reliance_values[i - 1]
+        y1 = reliance_values[i]
+
+        if y1 == y0:
+            transition = x1
+
+        else:
+            transition = x0 + (
+                (0.5 - y0) * (x1 - x0)
+                / (y1 - y0)
+            )
+
+    premium = transition - P_SIMPLE
+
+    print(
+        f"\nEstimated transition point: "
+        f"{transition:.3f}"
+    )
+
+    print(
+        f"Simple feature predictiveness: "
+        f"{P_SIMPLE:.3f}"
+    )
+
+    print(
+        f"Estimated simplicity premium: "
+        f"{premium:.3f}"
+    )
+
+plt.figure(figsize=(9, 5))
+
+plt.errorbar(
+    p_values,
+    reliance_values,
+    yerr=[
+        r["reliance_std"] for r in results
+    ],
+    marker="o",
+    capsize=4,
+    label="Simple-feature reliance"
+)
+
+plt.axhline(
+    0.5,
+    linestyle="--",
+    label="Equal reliance"
+)
+
+plt.axvline(
+    P_SIMPLE,
+    linestyle=":",
+    label="Simple feature predictiveness"
+)
+
+plt.xlabel(
+    "Complex feature predictiveness"
+)
+
+plt.ylabel(
+    "Simple-feature reliance"
+)
+
+plt.title(
+    "Does Predictive Strength Override Simplicity Bias?"
+)
+
+plt.ylim(-0.05, 1.05)
+
+plt.grid(
+    True,
+    alpha=0.3
+)
+
+plt.legend()
+plt.tight_layout()
+
+plt.savefig(
+    "simplicity_bias_results.png",
+    dpi=200
+)
+
+plt.show()
