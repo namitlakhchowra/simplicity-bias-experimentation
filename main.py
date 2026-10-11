@@ -167,3 +167,82 @@ class NeuralNetwork(nn.Module):
 
     def forward(self, x):
         return self.network(x)
+
+def train_model(X, y, seed):
+
+    torch.manual_seed(seed)
+
+    model = NeuralNetwork().to(DEVICE)
+
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=LEARNING_RATE
+    )
+
+    loss_function = nn.CrossEntropyLoss()
+
+    X_tensor = torch.tensor(
+        X,
+        dtype=torch.float32,
+        device=DEVICE
+    )
+
+    y_tensor = torch.tensor(
+        y,
+        dtype=torch.long,
+        device=DEVICE
+    )
+
+    dataset_size = len(X)
+
+    for epoch in range(EPOCHS):
+
+        model.train()
+
+        permutation = torch.randperm(
+            dataset_size
+        )
+
+        for start in range(
+            0, dataset_size, BATCH_SIZE
+        ):
+
+            indices = permutation[
+                start:start + BATCH_SIZE
+            ].to(DEVICE)
+
+            batch_X = X_tensor[indices]
+            batch_y = y_tensor[indices]
+
+            optimizer.zero_grad()
+
+            logits = model(batch_X)
+
+            loss = loss_function(
+                logits, batch_y
+            )
+
+            loss.backward()
+            optimizer.step()
+
+    return model
+
+def predict(model, X):
+
+    model.eval()
+
+    with torch.no_grad():
+
+        X_tensor = torch.tensor(
+            X,
+            dtype=torch.float32,
+            device=DEVICE
+        )
+
+        logits = model(X_tensor)
+
+        predictions = logits.argmax(
+            dim=1
+        )
+
+    return predictions.cpu().numpy()
